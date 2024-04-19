@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9fafc;
+            background-image: linear-gradient(45deg, #f6d365, #fda085);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 30px;
+        }
+
+        .login-container input[type="email"],
+        .login-container input[type="password"],
+        .login-container input[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .login-container input[type="submit"] {
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-container input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .signup-link {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .signup-link a {
+            color: #007BFF;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Sign In</h2>
+        <form id="loginForm" action="/login" method="post">
+            <div>
+                <input type="email" id="email" name="email" placeholder="Email" required>
+            </div>
+            <div>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+            </div>
+            <div>
+                <input type="submit" value="Sign In">
+            </div>
+        </form>
+        <div class="signup-link">
+            <p>Don't have an account? <a href="\adminsignup.html">Sign Up</a></p>
+            <label id="forgotpasslabel" style="cursor: pointer; margin-top: 8px; margin-left: 2px;">Forgot Password?</label>
+        </div>
+    </div>
+    <script type="module">
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        //   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-analytics.js";
+
+
+        import { getFirestore, doc, getDoc}  from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+        import {getAuth, signInWithEmailAndPassword, sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+        
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3GccrbGOWYeJb1IwwrAnoStVtouHmo-g",
+            authDomain: "trekzen2024.firebaseapp.com",
+            projectId: "trekzen2024",
+            storageBucket: "trekzen2024.appspot.com",
+            messagingSenderId: "539096075945",
+            appId: "1:539096075945:web:88e4786b9f407a2e32e3b8",
+            measurementId: "G-9ZD4X1PMM9"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        // const analytics = getAnalytics(app);
+        const db= getFirestore();
+        const auth= getAuth(app);
+
+
+        let EmailInp=document.getElementById('email');
+        let PassInp = document.getElementById('password');
+
+        let MainForm = document.getElementById('loginForm'); 
+        let ForgotPassLabel = document.getElementById('forgotpasslabel');
+
+        let SignInUser = evt => {
+        evt.preventDefault();
+
+        signInWithEmailAndPassword(auth, EmailInp.value, PassInp.value)
+        .then(async(credentials)=>{
+        var ref = doc(db, "AdminsAuthList", credentials.user.uid);
+        const docSnap= await getDoc(ref);
+        if(docSnap.exists()){
+        sessionStorage.setItem("user-info", JSON.stringify({ 
+        firstname: docSnap.data().firstname,
+        lastname: docSnap.data().lastname,
+
+        }))
+
+        sessionStorage.setItem("user-creds", JSON.stringify(credentials.user)); 
+        window.location.href="adminpage.html";//homepage evide kodukanam
+
+        }
+        })
+        .catch((error)=>{
+        alert(error.message);
+        console.log(error.code);
+        console.log(error.message)
+
+        })
+        }
+
+
+
+        let ForgotPassword =()=>{
+
+        sendPasswordResetEmail(auth, EmailInp.value)
+        .then(()=>{
+        alert("A password Reset Link has been sent to your email");
+        })
+        .catch(()=>{
+        console.log(error.code);
+        console.log(error.message);
+        })
+        }
+        MainForm.addEventListener('submit', SignInUser)
+        ForgotPassLabel.addEventListener('click', ForgotPassword)
+
+
+
+    </script>
+    
+</body>
+</html>
